@@ -42,8 +42,8 @@ echo ""										>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo "[Service]"								>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo "Type=forking"								>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo "EnvironmentFile=/etc/sysconfig/ORCLCDB.oracledb"				>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
-echo "ExecStart=/opt/oracle/product/19c/dbhome_1/bin/dbstart $ORACLE_HOME"	>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
-echo "ExecStop=/opt/oracle/product/19c/dbhome_1/bin/dbshut $ORACLE_HOME"	>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
+echo 'ExecStart=/opt/oracle/product/19c/dbhome_1/bin/dbstart $ORACLE_HOME'	>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
+echo 'ExecStop=/opt/oracle/product/19c/dbhome_1/bin/dbshut $ORACLE_HOME'	>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo "User=oracle"								>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo ""										>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
 echo "[Install]"								>> /usr/lib/systemd/system/ORCLCDB@oracledb.service
@@ -53,16 +53,16 @@ systemctl daemon-reload
 systemctl enable ORCLCDB@lsnrctl ORCLCDB@oracledb
 
 # Configure Env for user oracle
-echo "umask 022"									>> /home/oracle/.bash_profile
-echo "export ORACLE_SID=ORCLCDB"							>> /home/oracle/.bash_profile
-echo "export ORACLE_BASE=/opt/oracle/oradata"						>> /home/oracle/.bash_profile
-echo "export ORACLE_HOME=/opt/oracle/product/19c/dbhome_1"				>> /home/oracle/.bash_profile
-echo "export PATH=$PATH:$ORACLE_HOME/bin"						>> /home/oracle/.bash_profile
-echo ""											>> /home/oracle/.bash_profile
-echo "export LD_LIBRARY_PATH=/opt/oracle/oggs:$LD_LIBRARY_PATH"				>> /home/oracle/.bash_profile
-echo "export LD_LIBRARY_PATH=/opt/oracle/product/19c/dbhome_1/lib:$LD_LIBRARY_PATH"	>> /home/oracle/.bash_profile
-echo "export PATH=$PATH:/opt/oracle/oggs"						>> /home/oracle/.bash_profile
-echo "export GGHOME=/opt/oracle/oggs"							>> /home/oracle/.bash_profile
+echo 'umask 022'									>> /home/oracle/.bash_profile
+echo 'export ORACLE_SID=ORCLCDB'							>> /home/oracle/.bash_profile
+echo 'export ORACLE_BASE=/opt/oracle/oradata'						>> /home/oracle/.bash_profile
+echo 'export ORACLE_HOME=/opt/oracle/product/19c/dbhome_1'				>> /home/oracle/.bash_profile
+echo 'export PATH=$PATH:$ORACLE_HOME/bin'						>> /home/oracle/.bash_profile
+echo ''											>> /home/oracle/.bash_profile
+echo 'export LD_LIBRARY_PATH=/opt/oracle/oggs:$LD_LIBRARY_PATH'				>> /home/oracle/.bash_profile
+echo 'export LD_LIBRARY_PATH=/opt/oracle/product/19c/dbhome_1/lib:$LD_LIBRARY_PATH'	>> /home/oracle/.bash_profile
+echo 'export PATH=$PATH:/opt/oracle/oggs'						>> /home/oracle/.bash_profile
+echo 'export GGHOME=/opt/oracle/oggs'							>> /home/oracle/.bash_profile
 
 # Database Autostart
 sed -i 's/:N$/:Y/g' /etc/oratab
