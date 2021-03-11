@@ -88,7 +88,7 @@ chown -R oracle.oinstall /home/oracle/ogg
 su - oracle -c "cd /home/oracle/ogg/fbo_ggs_Linux_x64_shiphome/Disk1/; ./runInstaller -silent -showProgress -waitforcompletion -responseFile /home/oracle/ogg/fbo_ggs_Linux_x64_shiphome/Disk1/response/oggcore19.rsp"
 
 # Configure OGG
-echo "CheckpointTable CDB$ROOT.oggadm1.oggchkpt" >> /opt/oracle/oggs/GLOBALS
+echo "CheckpointTable ORCLPDB1.oggadm1.oggchkpt" >> /opt/oracle/oggs/GLOBALS
 chown oracle.oinstall /opt/oracle/oggs/GLOBALS
 chmod 644 /opt/oracle/oggs/GLOBALS
 
@@ -109,11 +109,11 @@ su - oracle -c "cd /opt/oracle/oggs/; ./ggsci < ggsci2.script"
 
 # Set this in the DB Source (WARNING: This depends on the origin, check this carefully.)
 echo '# Set COMPATIBLE (ex. for a  new 19c db.)'
-echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = 'compatible'; <--- Validate'
-echo 'SQL> ALTER SYSTEM SET COMPATIBLE = '19.0.0' SCOPE=SPFILE;'
+echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = \'compatible\'; <--- Validate'
+echo 'SQL> ALTER SYSTEM SET COMPATIBLE = \'19.0.0\' SCOPE=SPFILE;'
 echo 'SQL> SHUTDOWN IMMEDIATE'
 echo 'SQL> Startup'
-echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = 'compatible';'
+echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = \'compatible\';'
 echo ''
 echo '# Set GG Replication'
 echo 'ALTER SYSTEM SET enable_goldengate_replication=true SCOPE=SPFILE;'
@@ -126,17 +126,18 @@ echo 'SQL> ALTER DATABASE ARCHIVELOG;'
 echo 'SQL> ALTER DATABASE OPEN;'
 echo 'SQL> ARCHIVE LOG LIST'
 echo ''
-echo '# Select PDB.'
-echo 'alter session set container=ORCLPDB1;'
+#echo '# Select PDB.'
+#echo 'alter session set container=ORCLPDB1;'
+echo '# The user of OGG has to be in the root container.'
 echo ''
 echo '# Create ogg user.'
 echo 'CREATE TABLESPACE tbs_oggperm_1'
-echo '  DATAFILE 'tbs_oggperm_1.dat''
+echo '  DATAFILE \'tbs_oggperm_1.dat\''
 echo '    SIZE 1G'
 echo '  ONLINE;'
 echo ''
-echo 'CREATE TEMPORARY TABLESPACE tbs_oggtemp_2'
-echo '  TEMPFILE 'tbs_oggtemp_2.dbf''
+echo 'CREATE TEMPORARY TABLESPACE tbs_oggtemp_1'
+echo '  TEMPFILE \'tbs_oggtemp_1.dbf\''
 echo '    SIZE 1G'
 echo '    AUTOEXTEND ON;'
 echo ''
@@ -151,8 +152,8 @@ echo 'GRANT SELECT ANY DICTIONARY TO oggadm1;'
 echo 'GRANT FLASHBACK ANY TABLE TO oggadm1;'
 echo 'GRANT SELECT ANY TABLE TO oggadm1;'
 #echo 'GRANT SELECT_CATALOG_ROLE TO rds_master_user_name WITH ADMIN OPTION;'
-#echo 'exec rdsadmin.rdsadmin_util.grant_sys_object ('DBA_CLUSTERS', 'OGGADM1');'
-echo 'exec dbms_goldengate_auth.grant_admin_privilege('oggadm1');'
+#echo 'exec rdsadmin.rdsadmin_util.grant_sys_object (\'DBA_CLUSTERS\', \'OGGADM1\');'
+echo 'exec dbms_goldengate_auth.grant_admin_privilege(\'oggadm1\');'
 echo 'GRANT EXECUTE ON DBMS_FLASHBACK TO oggadm1;'
 echo 'GRANT SELECT ON SYS.V_$DATABASE TO oggadm1;'
 echo 'GRANT ALTER ANY TABLE TO oggadm1;'
@@ -166,11 +167,11 @@ echo ''
 
 # Set this in the DB Target (WARNING: This depends on the target, check this carefully.)
 echo '# Set COMPATIBLE (ex. for a  new 19c db.)'
-echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = 'compatible'; <--- Validate'
-echo 'SQL> ALTER SYSTEM SET COMPATIBLE = '19.0.0' SCOPE=SPFILE;'
+echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = \'compatible\'; <--- Validate'
+echo 'SQL> ALTER SYSTEM SET COMPATIBLE = \'19.0.0\' SCOPE=SPFILE;'
 echo 'SQL> SHUTDOWN IMMEDIATE'
 echo 'SQL> Startup'
-echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = 'compatible';'
+echo 'SQL> SELECT name, value, description FROM v$parameter WHERE name = \'compatible\';'
 echo ''
 echo '# Set GG Replication'
 echo 'ALTER SYSTEM SET enable_goldengate_replication=true SCOPE=SPFILE;'
@@ -184,11 +185,12 @@ echo '  DATAFILE 'tbs_oggperm_1.dat''
 echo '    SIZE 1G'
 echo '  ONLINE;'
 echo ''
-echo 'CREATE TEMPORARY TABLESPACE tbs_oggtemp_2'
-echo '  TEMPFILE 'tbs_oggtemp_2.dbf''
+echo 'CREATE TEMPORARY TABLESPACE tbs_oggtemp_1'
+echo '  TEMPFILE 'tbs_oggtemp_1.dbf''
 echo '    SIZE 1G'
 echo '    AUTOEXTEND ON;'
 echo ''
+echo 'alter session set "_ORACLE_SCRIPT"=true;'
 echo 'CREATE USER oggadm1'
 echo 'IDENTIFIED BY p4ssw0rd'
 echo '  DEFAULT TABLESPACE tbs_oggperm_1'
@@ -221,7 +223,11 @@ echo '   (DESCRIPTION='								>> /opt/oracle/product/19c/dbhome_1/network/admin
 echo '        (ENABLE=BROKEN)'							>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
 echo '        (ADDRESS_LIST='							>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
 echo '            (ADDRESS=(PROTOCOL=TCP)(HOST=10.0.1.150)(PORT=1521)))'	>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
-echo '        (CONNECT_DATA=(SID=ORCLCDB))'					>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
+echo '        #(CONNECT_DATA=(SID=ORCLCDB))'					>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
+echo '        (CONNECT_DATA ='							>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
+echo '          (SERVER = DEDICATED)'						>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
+echo '          (SERVICE_NAME = ORCLPDB1)'					>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
+echo '        )'								>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
 echo '    )'									>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
 echo ''										>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
 echo 'OGGTARGET='								>> /opt/oracle/product/19c/dbhome_1/network/admin/tnsnames.ora
@@ -255,16 +261,16 @@ echo 'SETENV (ORACLE_SID=ORCLCDB)'			>> /opt/oracle/oggs/dirprm/rdestino.prm
 echo 'SETENV (NLSLANG=AL32UTF8)'			>> /opt/oracle/oggs/dirprm/rdestino.prm
 echo 'USERID oggadm1@OGGTARGET, password "p4ssw0rd"'	>> /opt/oracle/oggs/dirprm/rdestino.prm
 echo 'ASSUMETARGETDEFS'					>> /opt/oracle/oggs/dirprm/rdestino.prm
-echo 'MAP ORCLPDB1.MYSCHEMA1.*, TARGET ORCLPDB1.MYSCHEMA1.*, FILTER ( @GETENV('TRANSACTION', 'CSN') > 2688904);'	>> /opt/oracle/oggs/dirprm/rdestino.prm
+echo 'MAP ORCLPDB1.MYSCHEMA1.*, TARGET ORCLPDB1.MYSCHEMA1.*, FILTER ( @GETENV(\'TRANSACTION\', \'CSN\') > 2688904);'	>> /opt/oracle/oggs/dirprm/rdestino.prm
 chown oracle.oinstall /opt/oracle/oggs/dirprm/rdestino.prm
 chmod 644 /opt/oracle/oggs/dirprm/rdestino.prm
 
-echo 'dblogin userid oggadm1@OGGORIGEN password p4ssw0rd'			>> /opt/oracle/oggs/ggsci3.script
-echo 'add checkpointtable '							>> /opt/oracle/oggs/ggsci3.script
+echo 'dblogin userid oggadm1@OGGSOURCE password p4ssw0rd'			>> /opt/oracle/oggs/ggsci3.script
+echo 'add checkpointtable'							>> /opt/oracle/oggs/ggsci3.script
 echo 'add trandata ORCLPDB1.MYSCHEMA1.*'					>> /opt/oracle/oggs/ggsci3.script
 echo 'add extract EORIGEN tranlog, INTEGRATED tranlog, begin now'		>> /opt/oracle/oggs/ggsci3.script
 echo 'add exttrail /opt/oracle/ggs/dirdat/or extract EORIGEN, MEGABYTES 100'	>> /opt/oracle/oggs/ggsci3.script
-echo 'register EXTRACT EORIGEN, DATABASE'					>> /opt/oracle/oggs/ggsci3.script
+echo 'register EXTRACT EORIGEN, DATABASE CONTAINER (\'ORCLPDB1\')'		>> /opt/oracle/oggs/ggsci3.script
 echo 'start EORIGEN'								>> /opt/oracle/oggs/ggsci3.script
 echo 'quit'									>> /opt/oracle/oggs/ggsci3.script
 chown oracle.oinstall /opt/oracle/oggs/ggsci3.script
@@ -335,3 +341,46 @@ BEGIN
   DBMS_DATAPUMP.START_JOB(v_hdnl);
 END;
 /
+
+# Create schema dummy to test (MYSCHEMA1)
+
+alter session set container=ORCLPDB1;
+alter session set "_ORACLE_SCRIPT"=true;
+
+CREATE TABLESPACE tbs_perm_01
+  DATAFILE 'tbs_perm_01.dat'
+    SIZE 1G
+  ONLINE;
+
+CREATE TEMPORARY TABLESPACE tbs_temp_01
+  TEMPFILE 'tbs_temp_01.dbf'
+    SIZE 1G
+    AUTOEXTEND ON;
+
+CREATE USER MYSCHEMA1
+  IDENTIFIED BY p4ssw0rd
+  DEFAULT TABLESPACE tbs_perm_01
+  TEMPORARY TABLESPACE tbs_temp_01
+  QUOTA 1G on tbs_perm_01;
+
+GRANT create session TO MYSCHEMA1;
+GRANT create table TO MYSCHEMA1;
+GRANT create view TO MYSCHEMA1;
+GRANT create any trigger TO MYSCHEMA1;
+GRANT create any procedure TO MYSCHEMA1;
+GRANT create sequence TO MYSCHEMA1;
+GRANT create synonym TO MYSCHEMA1;
+
+connect MYSCHEMA1
+
+CREATE TABLE customers
+(
+  id number(10) NOT NULL,
+  name varchar2(50) NOT NULL,
+  address varchar2(50),
+  age number(10),
+  CONSTRAINT customers_pk PRIMARY KEY (id)
+);
+
+SELECT table_name from all_tables where owner = 'MYSCHEMA1';
+SELECT COUNT(*) FROM "MYSCHEMA1"."CUSTOMERS";
